@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('content');
             $table->string('image')->nullable();
             $table->boolean('is_approved')->default(false);
-            $table->boolean('is_active')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

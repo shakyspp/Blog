@@ -19,15 +19,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('blogs', BlogController::class);
-    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
-    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
-    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::patch('blogs/{blog}/toggle-status', [BlogController::class, 'toggleStatus'])->name('blogs.toggle-status');
+
+    Route::get('/all-blogs', [BlogController::class, 'blogs'])->name('blogs.all');
+    Route::get('/view-blogs/{blog}', [BlogController::class, 'showBlog'])->name('blogs.view');
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/admin/blogs', [BlogApproveController::class, 'index'])->name('admin.blogs.index');
         Route::get('/admin/blogs/{blog}', [BlogApproveController::class, 'show'])->name('admin.blogs.show');
-        Route::post('/admin/blogs/{blog}/approve', [BlogApproveController::class, 'approve'])->name('admin.blogs.approve');
+        Route::patch('/admin/blogs/{blog}/approve', [BlogApproveController::class, 'update'])->name('admin.blogs.approve');
         Route::delete('/admin/blogs/{blog}', [BlogApproveController::class, 'destroy'])->name('admin.blogs.destroy');
+        Route::patch('/admin/blogs/{blog}/toggle-status', [BlogApproveController::class, 'toggleStatus'])->name('admin.blogs.toggle-status');
     });
 });
 

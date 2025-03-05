@@ -13,7 +13,9 @@ class BlogController extends Controller
      */
     public function index()
     {
-        $blogs = Blog::with('user')->get();
+        $blogs = Blog::with('user')
+            ->where('user_id', auth()->id())
+            ->get();
         return view('blogs.index', compact('blogs'));
     }
 
@@ -50,32 +52,68 @@ class BlogController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Blog $blog)
     {
-        //
+        return view('blogs.show', compact('blog'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Blog $blog)
     {
-        //
+        return view('blogs.edit', compact('blog'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Blog $blog)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'image' => 'nullable|image',
+        ]);
+
+        $validated['is_approved'] = 0;
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('blog-thumbnail', 'public');
+        }
+
+        $blog->update($validated);
+
+        return redirect()->route('blogs.index')->with('success', 'Blog submitted for approval.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Blog $blog)
     {
-        //
+        $blog->delete();
+        return redirect()->route('blogs.index')->with('success', 'Blog deleted successfully!');
+    }
+
+    public function toggleStatus(Blog $blog)
+    {
+        $blog->is_active = !$blog->is_active;
+        $blog->save();
+        return redirect()->route('blogs.index')->with('success', 'Blog status updated');
+    }
+
+    public function blogs()
+    {
+        $blogs = Blog::with('user')
+            ->where('is_approved', true)
+            ->where('is_active', true)
+            ->get();
+        return view('web.blogs', compact('blogs'));
+    }
+
+    public function showBlog(Blog $blog)
+    {
+        return view('web.show', compact('blog'));
     }
 }
